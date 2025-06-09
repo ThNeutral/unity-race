@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CarController : MonoBehaviour
 {
@@ -20,6 +21,33 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform frontLeftWheelTransform, frontRightWheelTransform;
     [SerializeField] private Transform rearLeftWheelTransform, rearRightWheelTransform;
 
+    private DriveInputs inputs;
+    private InputAction horizontal;
+    private InputAction vertical;
+    private InputAction @break;
+
+    private void Awake()
+    {
+        inputs = new DriveInputs();
+        horizontal = inputs.Driving.Horizontal;
+        vertical = inputs.Driving.Vertical;
+        @break = inputs.Driving.Break;
+    }
+
+    private void OnEnable()
+    {
+        horizontal.Enable();
+        vertical.Enable();
+        @break.Enable();
+    }
+
+    private void OnDisable()
+    {
+        horizontal.Disable();
+        vertical.Disable();
+        @break.Disable();
+    }
+
     private void FixedUpdate()
     {
         GetInput();
@@ -31,17 +59,13 @@ public class CarController : MonoBehaviour
     private void GetInput()
     {
         // Steering Input
-        horizontalInput = 0;
-        if (Input.GetKey(KeyCode.A)) horizontalInput = -1;
-        if (Input.GetKey(KeyCode.D)) horizontalInput = 1;
+        horizontalInput = horizontal.ReadValue<float>();
 
         // Acceleration Input
-        verticalInput = 0;
-        if (Input.GetKey(KeyCode.W)) verticalInput = 1;
-        if (Input.GetKey(KeyCode.S)) verticalInput = -1;
+        verticalInput = vertical.ReadValue<float>();
 
         // Breaking Input
-        isBreaking = Input.GetKey(KeyCode.Space);
+        isBreaking = @break.ReadValue<float>() != 0;
     }
 
     private void HandleMotor()
