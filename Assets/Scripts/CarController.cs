@@ -7,8 +7,46 @@ using UnityEngine.InputSystem;
 public class CarController : MonoBehaviour
 {
     private float horizontalInput, verticalInput;
+    public float HorizontalInput
+    {
+        set
+        {
+            if (value > 0)
+            {
+                horizontalInput = 1.0f;
+            }
+            else if (value < 0)
+            {
+                horizontalInput = -1.0f;
+            }
+            else
+            {
+                horizontalInput = 0;
+            }
+        }
+    }
+    public float VerticallInput
+    {
+        set
+        {
+            if (value > 0)
+            {
+                verticalInput = 1.0f;
+            }
+            else if (value < 0)
+            {
+                verticalInput = -1.0f;
+            }
+            else
+            {
+                verticalInput = 0;
+            }
+        }
+    }
+
     private float currentSteerAngle, currentbreakForce;
     private bool isBreaking;
+    public bool IsBreaking { set => isBreaking = value; }
 
     // Settings
     [SerializeField] private float motorForce, breakForce, maxSteerAngle;
@@ -21,51 +59,11 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform frontLeftWheelTransform, frontRightWheelTransform;
     [SerializeField] private Transform rearLeftWheelTransform, rearRightWheelTransform;
 
-    private DriveInputs inputs;
-    private InputAction horizontal;
-    private InputAction vertical;
-    private InputAction @break;
-
-    private void Awake()
-    {
-        inputs = new DriveInputs();
-        horizontal = inputs.Driving.Horizontal;
-        vertical = inputs.Driving.Vertical;
-        @break = inputs.Driving.Break;
-    }
-
-    private void OnEnable()
-    {
-        horizontal.Enable();
-        vertical.Enable();
-        @break.Enable();
-    }
-
-    private void OnDisable()
-    {
-        horizontal.Disable();
-        vertical.Disable();
-        @break.Disable();
-    }
-
     private void FixedUpdate()
     {
-        GetInput();
         HandleMotor();
         HandleSteering();
-        // UpdateWheels();
-    }
-
-    private void GetInput()
-    {
-        // Steering Input
-        horizontalInput = horizontal.ReadValue<float>();
-
-        // Acceleration Input
-        verticalInput = vertical.ReadValue<float>();
-
-        // Breaking Input
-        isBreaking = @break.ReadValue<float>() != 0;
+        UpdateWheels();
     }
 
     private void HandleMotor()
@@ -101,10 +99,8 @@ public class CarController : MonoBehaviour
 
     private void UpdateSingleWheel(WheelCollider wheelCollider, Transform wheelTransform)
     {
-        Vector3 pos;
-        Quaternion rot;
-        wheelCollider.GetWorldPose(out pos, out rot);
-        wheelTransform.rotation = rot;
-        wheelTransform.position = pos;
+        wheelCollider.GetWorldPose(out var pos, out var rot);
+        rot = rot * Quaternion.Euler(-90, 0, 90);
+        wheelTransform.SetPositionAndRotation(pos, rot);
     }
 }
