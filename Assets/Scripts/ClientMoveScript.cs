@@ -6,11 +6,13 @@ public class ClientMoveScript : NetworkBehaviour
 {
     [SerializeField] private CarController m_CarController;
     [SerializeField] private CarInputs m_CarInputs;
+    [SerializeField] private new Camera camera;
 
     private void Awake()
     {
         m_CarController.enabled = false;
         m_CarInputs.enabled = false;
+        camera.gameObject.SetActive(false);
     }
 
     public override void OnNetworkSpawn()
@@ -20,6 +22,8 @@ public class ClientMoveScript : NetworkBehaviour
         if (IsOwner)
         {
             m_CarInputs.enabled = true;
+            camera.gameObject.SetActive(true);
+            camera.tag = "MainCamera";
         }
 
         if (IsServer)
