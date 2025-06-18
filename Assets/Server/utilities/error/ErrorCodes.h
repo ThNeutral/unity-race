@@ -7,4 +7,6 @@
 #define SOCKET_ERROR (-1)
 #endif
 
+#define STREAM_ERROR (-1)
+
 #endif
