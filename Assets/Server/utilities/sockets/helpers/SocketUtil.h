@@ -6,6 +6,7 @@
 #include <sockets/helpers/SocketAddressFamily.h>
 
 #include <sys/socket.h>
+#include <vector>
 
 #define INVALID_SOCKET -1
 

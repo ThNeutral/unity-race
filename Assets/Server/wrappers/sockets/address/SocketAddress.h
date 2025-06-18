@@ -16,7 +16,8 @@ typedef std::shared_ptr<SocketAddress> SocketAddressPtr;
 
 class SocketAddress {
 public:
-    SocketAddress(uint32_t inAddress, uint16_t inPort) ;
+    static SocketAddressPtr IPv4(const char inAddress[4], uint16_t inPort);
+    static SocketAddressPtr IPv6(const char inAddress[16], uint16_t inPort);
     SocketAddress(const sockaddr& inSockAddr);
     SocketAddress();
     size_t GetSize() const;
@@ -24,6 +25,7 @@ public:
 private:
     sockaddr mSockAddr;
     sockaddr_in* GetAsSockAddrIn();
+    sockaddr_in6* GetAsSockAddrIn6();
     
     friend class UDPSocket;
     friend class TCPSocket;

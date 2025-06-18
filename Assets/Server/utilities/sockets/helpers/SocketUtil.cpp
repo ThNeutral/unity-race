@@ -3,7 +3,6 @@
 #include <cerrno>
 #include <cstring>
 #include <iostream>
-#include <vector>
 #include <sys/select.h>
 
 int SocketUtil::GetLastError() {

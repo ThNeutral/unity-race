@@ -5,10 +5,30 @@
 #include <memory>
 #include <sockets/address/SocketAddress.h>
 
-SocketAddress::SocketAddress(uint32_t inAddress, uint16_t inPort) {
-    GetAsSockAddrIn()->sin_family = AF_INET;
-    GetAsSockAddrIn()->sin_addr.s_addr = htonl(inAddress);
-    GetAsSockAddrIn()->sin_port = htons(inPort);
+SocketAddressPtr SocketAddress::IPv4(const char inAddress[4], uint16_t inPort) {
+    auto addr = new SocketAddress();
+    auto addr_in = addr->GetAsSockAddrIn();
+    memcpy(addr_in, 0, sizeof(sockaddr_in));
+
+    addr_in->sin_family = AF_INET;
+    uint32_t uintaddr;
+    memcpy(&uintaddr, inAddress, 4 * sizeof(char));
+    addr_in->sin_addr.s_addr = htonl(uintaddr);
+    addr_in->sin_port = htons(inPort);
+
+    return SocketAddressPtr(addr);
+}
+
+SocketAddressPtr SocketAddress::IPv6(const char inAddress[16], uint16_t inPort) {
+    auto addr = new SocketAddress();
+    auto addr_in6 = addr->GetAsSockAddrIn6();
+    memcpy(addr_in6, 0, sizeof(sockaddr_in6));
+
+    addr_in6->sin6_family = AF_INET6;
+    memcpy(&addr_in6->sin6_addr, inAddress, 16 * sizeof(char));
+    addr_in6->sin6_port = htons(inPort);
+
+    return SocketAddressPtr(addr);
 }
 
 SocketAddress::SocketAddress(const sockaddr& inSockAddr) {
@@ -18,11 +38,22 @@ SocketAddress::SocketAddress(const sockaddr& inSockAddr) {
 SocketAddress::SocketAddress() {}
 
 size_t SocketAddress::GetSize() const {
-    return sizeof(sockaddr);
+    switch (mSockAddr.sa_family) {
+        case AF_INET6:
+            return sizeof(sockaddr_in6);
+        case AF_INET:
+            return sizeof(sockaddr_in);
+        default:
+            return sizeof(sockaddr);
+    }
 }
 
 sockaddr_in* SocketAddress::GetAsSockAddrIn() {
     return reinterpret_cast<sockaddr_in*>(&mSockAddr);
+}
+
+sockaddr_in6* SocketAddress::GetAsSockAddrIn6() {
+    return reinterpret_cast<sockaddr_in6*>(&mSockAddr);
 }
 
 std::string SocketAddress::ToString() const {
@@ -48,5 +79,5 @@ std::string SocketAddress::ToString() const {
             break;
     }
 
-    return std::string("<invalid>");
+    return std::string("<invalid_socket_address>");
 }
