@@ -3,4 +3,8 @@
 
 #define NO_ERROR 0
 
+#ifndef _WIN32
+#define SOCKET_ERROR (-1)
+#endif
+
 #endif

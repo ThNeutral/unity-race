@@ -15,20 +15,14 @@ SocketAddress::SocketAddress(const sockaddr& inSockAddr) {
     std::memcpy(&mSockAddr, &inSockAddr, sizeof(sockaddr));
 }
 
+SocketAddress::SocketAddress() {}
+
 size_t SocketAddress::GetSize() const {
     return sizeof(sockaddr);
 }
 
 sockaddr_in* SocketAddress::GetAsSockAddrIn() {
     return reinterpret_cast<sockaddr_in*>(&mSockAddr);
-}
-
-const sockaddr& SocketAddress::ConstSockAddr() const {
-    return mSockAddr;
-}
-
-sockaddr* SocketAddress::MutableSockAddr() {
-    return &mSockAddr;
 }
 
 std::string SocketAddress::ToString() const {
