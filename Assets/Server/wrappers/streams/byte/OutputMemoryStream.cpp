@@ -1,4 +1,4 @@
-#include <streams/OutputMemoryStream.h>
+#include <streams/byte/OutputMemoryStream.h>
 #include <logger/Logger.h>
 
 #include <stdlib.h>
