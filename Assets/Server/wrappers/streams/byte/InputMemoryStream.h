@@ -10,9 +10,9 @@ class InputMemoryStream {
 
         uint32_t GetRemainingDataSize() const;
 
-        int Read(void* outData, uint32_t inByteCount);
-        int Read(uint32_t& outData);
-        int Read(int32_t& outData);
+        void Read(void* outData, uint32_t inByteCount);
+        void Read(uint32_t& outData);
+        void Read(int32_t& outData);
     private:
         char* mBuffer;
         uint32_t mHead;
