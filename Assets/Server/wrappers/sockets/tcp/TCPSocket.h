@@ -18,6 +18,7 @@ class TCPSocket {
         TCPSocketPtr Accept(SocketAddress& inFromAddress);
         int Send(const void* inData, int inLen);
         int Receive(void* inBuffer, int inLen);
+        void Close();
         int GetFd() const;
     private:
         friend class SocketUtil;

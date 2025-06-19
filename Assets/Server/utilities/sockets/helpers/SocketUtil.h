@@ -12,7 +12,7 @@
 
 class SocketUtil {
     public:
-        static void ReportError(const wchar_t* funcName);
+        static void ReportError(const char* funcName);
         static int GetLastError();
         static UDPSocketPtr CreateUDPSocket(SocketAddressFamily inFamily);
         static TCPSocketPtr CreateTCPSocket(SocketAddressFamily inFamily);

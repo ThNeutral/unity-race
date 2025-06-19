@@ -1,9 +1,18 @@
 #include <iostream>
 #include <vector>
+#include <string>
+#include <errno.h>
 
 #include <sockets/helpers/SocketUtil.h>
 #include <sockets/address/SocketAddressFactory.h>
+#include <logger/Logger.h>
 #include <error/ErrorCodes.h>
+
+void closeSocket(std::vector<TCPSocketPtr>* sockets, TCPSocketPtr socket) {
+    auto toRemove = std::remove(sockets->begin(), sockets->end(), socket);
+    sockets->erase(toRemove);
+    socket->Close();
+}
 
 int main() {
     auto listenSocket = SocketUtil::CreateTCPSocket(INET6);
@@ -11,7 +20,7 @@ int main() {
     if (listenSocket->Bind(*receivingAddress) != NO_ERROR) {
         return 1;
     }
-    std::cout << "Bound socket to " << receivingAddress->ToString() << std::endl;
+    Logger::ReportInfo("main::listen_loop", (std::string("Bound socket to ") + receivingAddress->ToString()).c_str());
 
     std::vector<TCPSocketPtr> readBlockSockets;
     readBlockSockets.push_back(listenSocket);
@@ -23,27 +32,39 @@ int main() {
 
     std::vector<TCPSocketPtr> readableSockets;
 
-    std::cout << "Started listen loop" << std::endl;
+    Logger::ReportInfo("main::listen_loop", "Started listen loop");
     while (true) {
         if (SocketUtil::Select(&readBlockSockets, &readableSockets, nullptr, nullptr, nullptr, nullptr)) {
             for (const auto socket : readableSockets) {
                 if (socket == listenSocket) {
-                    std::cout << "New connection" << std::endl;
                     SocketAddress newClientAddress;
                     auto newSocket = listenSocket->Accept(newClientAddress);
                     readBlockSockets.push_back(newSocket);
-                    std::cout << "New connection from " << newClientAddress.ToString() << std::endl;
-                } else {
-                    const int bufSize = 512;
-                    char buf[bufSize];
-                    int receivedCount = socket->Receive(buf, bufSize);
-                    if (receivedCount < 0) continue;
-                    std::cout << "Received " << receivedCount << " bytes: \n" 
-                        << "------------START------------\n"
-                        << std::string(buf, receivedCount)
-                        << "-------------END-------------"
-                        << std::endl;
-                    }
+                    Logger::ReportInfo("main::listen_loop", (std::string("New connection from ") + newClientAddress.ToString()).c_str());
+                    continue;
+                } 
+                
+                const int bufSize = 512;
+                char buf[bufSize];
+                int receivedCount = socket->Receive(buf, bufSize);
+                
+                if (receivedCount == 0) {
+                    Logger::ReportWarning("main::listen_loop", "Client disconnected");
+                    closeSocket(&readableSockets, socket);
+                    continue;
+                }
+
+                if (receivedCount < 0) {
+                    Logger::ReportError("main::listen_loop", errno, std::strerror(errno));
+                    closeSocket(&readableSockets, socket);
+                    continue;
+                }
+
+                std::cout << "Received " << receivedCount << " bytes: \n" 
+                    << "------------START------------\n"
+                    << std::string(buf, receivedCount)
+                    << "-------------END-------------\n"
+                    << std::endl;
             }
         }
     }

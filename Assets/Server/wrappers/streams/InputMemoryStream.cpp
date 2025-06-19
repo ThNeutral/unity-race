@@ -1,5 +1,6 @@
-#include <wrappers/streams/InputMemoryStream.h>
+#include <streams/InputMemoryStream.h>
 #include <error/ErrorCodes.h>
+#include <logger/Logger.h>
 
 #include <stdlib.h>
 #include <string>
@@ -16,7 +17,7 @@ uint32_t InputMemoryStream::GetRemainingDataSize() const {
 
 int InputMemoryStream::Read(void* outData, uint32_t inByteCount) {
     if (inByteCount >= mHead) {
-        // TODO: better error handling here
+        Logger::ReportError("InputMemoryStream::Read", -1, "tried to read more data than exists in buffer");
         return STREAM_ERROR;
     }
 

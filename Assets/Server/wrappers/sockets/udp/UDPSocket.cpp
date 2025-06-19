@@ -7,7 +7,7 @@
 int UDPSocket::Bind(const SocketAddress& inBindAddress) {
     int err = bind(mSocket, &inBindAddress.mSockAddr, inBindAddress.GetSize());
     if (err != 0) {
-        SocketUtil::ReportError(L"UDPSocket::Bind");
+        SocketUtil::ReportError("UDPSocket::Bind");
         return SocketUtil::GetLastError();
     }
     return NO_ERROR;
@@ -19,7 +19,7 @@ int UDPSocket::SendTo(const void* inData, int inLen, const SocketAddress& inTo) 
         return byteSentCount;
     }
 
-    SocketUtil::ReportError(L"UDPSocket::SendTo");
+    SocketUtil::ReportError("UDPSocket::SendTo");
     return SocketUtil::GetLastError();
 }
 
@@ -30,7 +30,7 @@ int UDPSocket::ReceiveFrom(void* inBuffer, int inLen, SocketAddress& outFrom) {
         return readByteCount;
     }
 
-    SocketUtil::ReportError(L"UDPSocket::ReceiveFrom");
+    SocketUtil::ReportError("UDPSocket::ReceiveFrom");
     return SocketUtil::GetLastError();
 }
 
@@ -46,7 +46,7 @@ int UDPSocket::SetNonBlockingMode(bool inShouldBeNonBlocking) {
     #endif
 
     if (result == SOCKET_ERROR) {
-        SocketUtil::ReportError(L"UDPSocket::SetNonBlockingMode");
+        SocketUtil::ReportError("UDPSocket::SetNonBlockingMode");
         return SocketUtil::GetLastError();
     }
 

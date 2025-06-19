@@ -1,7 +1,9 @@
-#include <wrappers/streams/OutputMemoryStream.h>
+#include <streams/OutputMemoryStream.h>
+#include <logger/Logger.h>
 
 #include <stdlib.h>
 #include <algorithm>
+#include <exception>
 
 OutputMemoryStream::OutputMemoryStream() : mBuffer(nullptr), mHead(0), mCapacity(0) {
     ReallocBuffer(32);
@@ -20,8 +22,12 @@ uint32_t OutputMemoryStream::GetLength() const {
 }
 
 void OutputMemoryStream::ReallocBuffer(uint32_t inNewLength) {
-    // TODO: handle realloc error
-    mBuffer = static_cast<char*>(std::realloc(mBuffer, inNewLength));
+    char* newBuffer = static_cast<char*>(std::realloc(mBuffer, inNewLength));
+    if (newBuffer == nullptr) {
+        Logger::ReportFatal("OutputMemoryStream::ReallocBuffer", -1, "realloc failed", std::bad_alloc());
+    }
+    
+    mBuffer = newBuffer;
     mCapacity = inNewLength;
 }
 

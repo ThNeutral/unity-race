@@ -2,6 +2,7 @@
 #define OUTPUT_MEMORY_STREAM_H
 
 #include <stdint.h>
+#include <stddef.h> 
 
 class OutputMemoryStream {
     public:

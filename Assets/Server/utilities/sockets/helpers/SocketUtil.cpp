@@ -1,4 +1,5 @@
 #include <sockets/helpers/SocketUtil.h>
+#include <logger/Logger.h>
 
 #include <cerrno>
 #include <cstring>
@@ -9,10 +10,9 @@ int SocketUtil::GetLastError() {
     return errno;
 }
 
-void SocketUtil::ReportError(const wchar_t* funcName) {
+void SocketUtil::ReportError(const char* funcName) {
     int err = GetLastError();
-    std::wcerr << funcName << L" failed with error " << err << L": "
-               << std::strerror(err) << std::endl;
+    Logger::ReportError(funcName, err, std::strerror(err));
 }
 
 UDPSocketPtr SocketUtil::CreateUDPSocket(SocketAddressFamily inFamily) {
@@ -21,7 +21,7 @@ UDPSocketPtr SocketUtil::CreateUDPSocket(SocketAddressFamily inFamily) {
         return UDPSocketPtr(new UDPSocket(s));
     }
 
-    ReportError(L"SocketUtil::CreateUDPSocket");
+    ReportError("SocketUtil::CreateUDPSocket");
     return nullptr;
 }
 
@@ -31,7 +31,7 @@ TCPSocketPtr SocketUtil::CreateTCPSocket(SocketAddressFamily inFamily) {
         return TCPSocketPtr(new TCPSocket(s));
     }
 
-    ReportError(L"SocketUtil::CreateTCPSocket");
+    ReportError("SocketUtil::CreateTCPSocket");
     return nullptr;
 }
 
