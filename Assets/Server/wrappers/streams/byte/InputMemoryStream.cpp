@@ -16,12 +16,12 @@ uint32_t InputMemoryStream::GetRemainingDataSize() const {
 }
 
 void InputMemoryStream::Read(void* outData, uint32_t inByteCount) {
-    if (inByteCount >= mHead) {
-        Logger::ReportFatal("InputMemoryStream::Read", -1, "tried to read more data than exists in buffer");
+    if (inByteCount > GetRemainingDataSize()) {
+        Logger::ReportFatal("InputMemoryStream::Read", "tried to read more data than exists in buffer");
     }
 
-    memcpy(outData, mBuffer + (mHead - inByteCount), inByteCount);
-    mHead -= inByteCount;
+    memcpy(outData, mBuffer + mHead, inByteCount);
+    mHead += inByteCount;
 }
 
 void InputMemoryStream::Read(uint32_t& outData) {

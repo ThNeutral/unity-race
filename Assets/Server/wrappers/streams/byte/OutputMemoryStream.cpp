@@ -21,6 +21,10 @@ uint32_t OutputMemoryStream::GetLength() const {
     return mHead;
 }
 
+uint32_t OutputMemoryStream::GetCapacity() const {
+    return mCapacity;
+}
+
 void OutputMemoryStream::ReallocBuffer(uint32_t inNewLength) {
     char* newBuffer = static_cast<char*>(std::realloc(mBuffer, inNewLength));
     if (newBuffer == nullptr) {

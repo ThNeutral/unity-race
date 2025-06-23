@@ -4,32 +4,8 @@
 #include <string>
 #include <memory>
 #include <sockets/address/SocketAddress.h>
-
-SocketAddressPtr SocketAddress::IPv4(const char inAddress[4], uint16_t inPort) {
-    auto addr = new SocketAddress();
-    auto addr_in = addr->GetAsSockAddrIn();
-    memcpy(addr_in, 0, sizeof(sockaddr_in));
-
-    addr_in->sin_family = AF_INET;
-    uint32_t uintaddr;
-    memcpy(&uintaddr, inAddress, 4 * sizeof(char));
-    addr_in->sin_addr.s_addr = htonl(uintaddr);
-    addr_in->sin_port = htons(inPort);
-
-    return SocketAddressPtr(addr);
-}
-
-SocketAddressPtr SocketAddress::IPv6(const char inAddress[16], uint16_t inPort) {
-    auto addr = new SocketAddress();
-    auto addr_in6 = addr->GetAsSockAddrIn6();
-    memcpy(addr_in6, 0, sizeof(sockaddr_in6));
-
-    addr_in6->sin6_family = AF_INET6;
-    memcpy(&addr_in6->sin6_addr, inAddress, 16 * sizeof(char));
-    addr_in6->sin6_port = htons(inPort);
-
-    return SocketAddressPtr(addr);
-}
+#include <logger/Logger.h>
+#include <iostream>
 
 SocketAddress::SocketAddress(const sockaddr& inSockAddr) {
     std::memcpy(&mSockAddr, &inSockAddr, sizeof(sockaddr));

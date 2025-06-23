@@ -1,1 +1,4 @@
 build
+
+# Tests should run using `sh ./utils.sh test`
+main_test.cpp

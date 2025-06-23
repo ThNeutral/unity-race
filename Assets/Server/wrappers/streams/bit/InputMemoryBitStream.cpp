@@ -3,15 +3,23 @@
 #include <stdlib.h>
 #include <logger/Logger.h>
 
-InputMemoryBitStream::InputMemoryBitStream(char* inData) : mBuffer(inData) {}
+InputMemoryBitStream::InputMemoryBitStream(char* inData, uint32_t mBitCount) : mBuffer(inData), mBitHead(0), mBitCapacity(mBitCount) {}
 
 InputMemoryBitStream::~InputMemoryBitStream() {
     free(mBuffer);
 }
 
+uint32_t InputMemoryBitStream::GetRemainingBitDataSize() const {
+    return mBitCapacity - mBitHead;
+}
+
+uint32_t InputMemoryBitStream::GetRemainingByteDataSize() const {
+    return (GetRemainingBitDataSize() + 7) >> 3;
+}
+
 void InputMemoryBitStream::ReadBits(uint8_t& outData, size_t inBitCount) {
-    if (inBitCount >= mBitHead) {
-        Logger::ReportFatal("InputMemoryBitStream::ReadBits", -1, "tried to read more data than exists in buffer");
+    if (inBitCount > GetRemainingBitDataSize()) {
+        Logger::ReportFatal("InputMemoryBitStream::ReadBits", "tried to read more data than exists in buffer");
     }
 
     uint32_t byteOffset = mBitHead >> 3;
@@ -38,14 +46,20 @@ void InputMemoryBitStream::ReadBits(uint8_t& outData, size_t inBitCount) {
 void InputMemoryBitStream::ReadBits(void* outData, size_t inBitCount) {
     char* buf = static_cast<char*>(outData);
     
-    while (inBitCount > 8) {
-        ReadBits(buf, 8);
+    while (inBitCount >= 8) {
+        uint8_t outData;
+        ReadBits(outData, 8);
+
+        *buf = outData; 
         buf += 1;
         inBitCount -= 8;
     }
 
     if (inBitCount > 0) {
-        ReadBits(buf, inBitCount);
+        uint8_t outData;
+        ReadBits(outData, inBitCount);
+
+        *buf = outData; 
     }
 }
 
@@ -58,7 +72,7 @@ uint32_t InputMemoryBitStream::GetBitLenght() const {
 }
 
 uint32_t InputMemoryBitStream::GetByteLenght() const {
-    return (mBitHead) >> 3;
+    return (mBitHead + 7) >> 3;
 }
 
 void InputMemoryBitStream::ReadBytes(void* outData, size_t inByteCount) {
@@ -67,10 +81,4 @@ void InputMemoryBitStream::ReadBytes(void* outData, size_t inByteCount) {
 
 void InputMemoryBitStream::Read(bool& outData) {
     ReadBits(&outData, 1);
-}
-
-template<typename T> 
-void InputMemoryBitStream::Read(T& outData, size_t inBitCount = sizeof(T) * 8) {
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value, "Generic Read only supports primitive data types");
-    ReadBits(&outData, inBitCount);
 }

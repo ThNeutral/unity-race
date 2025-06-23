@@ -4,8 +4,10 @@
 template <typename tFrom, typename tTo>
 class TypeAliaser {
     public:
-        TypeAliaser(tFrom inFromValue);
-        tTo& Get();
+        TypeAliaser(tFrom inFromValue) : mAsFromType(inFromValue) {}
+        tTo& Get() {
+            return mAsToType;
+        }
 
         union {
             tFrom mAsFromType;

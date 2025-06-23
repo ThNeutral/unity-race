@@ -16,11 +16,18 @@ void closeSocket(std::vector<TCPSocketPtr>* sockets, TCPSocketPtr socket) {
 
 int main() {
     auto listenSocket = SocketUtil::CreateTCPSocket(INET6);
-    auto receivingAddress = SocketAddressFactory::CreateIPv6FromString("localhost:8080");
+
+    std::string desiredIP = "[::1]";
+    auto receivingAddress = SocketAddressFactory::CreateIPv6FromString(desiredIP);
+    if (receivingAddress == nullptr) {
+        Logger::ReportError("main::setup", ((std::string("Failed to parse ") + desiredIP).c_str()));
+        return 1;
+    }
+    
     if (listenSocket->Bind(*receivingAddress) != NO_ERROR) {
         return 1;
     }
-    Logger::ReportInfo("main::listen_loop", (std::string("Bound socket to ") + receivingAddress->ToString()).c_str());
+    Logger::ReportInfo("main::setup", (std::string("Bound socket to ") + receivingAddress->ToString()).c_str());
 
     std::vector<TCPSocketPtr> readBlockSockets;
     readBlockSockets.push_back(listenSocket);
@@ -32,7 +39,7 @@ int main() {
 
     std::vector<TCPSocketPtr> readableSockets;
 
-    Logger::ReportInfo("main::listen_loop", "Started listen loop");
+    Logger::ReportInfo("main::setup", "Started listen loop");
     while (true) {
         if (SocketUtil::Select(&readBlockSockets, &readableSockets, nullptr, nullptr, nullptr, nullptr)) {
             for (const auto socket : readableSockets) {
@@ -43,7 +50,7 @@ int main() {
                     Logger::ReportInfo("main::listen_loop", (std::string("New connection from ") + newClientAddress.ToString()).c_str());
                     continue;
                 } 
-                
+
                 const int bufSize = 512;
                 char buf[bufSize];
                 int receivedCount = socket->Receive(buf, bufSize);

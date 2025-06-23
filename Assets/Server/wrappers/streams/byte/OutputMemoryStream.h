@@ -10,6 +10,7 @@ class OutputMemoryStream {
         ~OutputMemoryStream();
         const char* GetBufferPtr() const;
         uint32_t GetLength() const;
+        uint32_t GetCapacity() const;
 
         void Write(const void* inData, size_t inByteCount);
         void Write(uint32_t inData);

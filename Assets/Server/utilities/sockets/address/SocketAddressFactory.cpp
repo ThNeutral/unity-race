@@ -1,5 +1,8 @@
 #include <sockets/address/SocketAddress.h>
 #include <sockets/address/SocketAddressFactory.h>
+#include <logger/Logger.h>
+#include <errno.h>
+#include <string>
 #include <string>
 #include <netdb.h>
 
@@ -41,15 +44,28 @@ SocketAddressPtr SocketAddressFactory::CreateIPv4FromString(const std::string& i
     return toRet;
 }
 
-SocketAddressPtr SocketAddressFactory::CreateIPv6FromString(const std::string& inString) {
-    auto pos = inString.find_last_of(":");
 
-    std::string host, service;
-    if (pos != std::string::npos) {
-        host = inString.substr(0, pos);
-        service = inString.substr(pos + 1);
+// [::1]:8080 OR [::1]
+SocketAddressPtr SocketAddressFactory::CreateIPv6FromString(const std::string& inString) {
+    if (inString[0] != '[') {
+        Logger::ReportError("SocketAddressFactory::CreateIPv6FromString", "IPv6 string should be of format [ip] OR [ip]:port");
+        return nullptr;
+    }
+
+    auto closingBracketPosition = inString.find_last_of("]");
+    auto colonPosition = inString.find_last_of(":");
+
+    if (closingBracketPosition == std::string::npos) {
+        Logger::ReportError("SocketAddressFactory::CreateIPv6FromString", "IPv6 string should be of format [ip] OR [ip]:port");
+        return nullptr;    
+    }
+
+    std::string 
+        host = inString.substr(1, closingBracketPosition - 1), 
+        service;
+    if (closingBracketPosition < colonPosition) {
+        service = inString.substr(colonPosition + 1);    
     } else {
-        host = inString;
         service = "0";
     }
 
