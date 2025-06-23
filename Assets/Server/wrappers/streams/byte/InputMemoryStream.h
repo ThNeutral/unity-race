@@ -2,6 +2,7 @@
 #define INPUT_MEMORY_STREAM_H
 
 #include <stdint.h>
+#include <vector>
 
 class InputMemoryStream {
     public:
@@ -13,6 +14,21 @@ class InputMemoryStream {
         void Read(void* outData, uint32_t inByteCount);
         void Read(uint32_t& outData);
         void Read(int32_t& outData);
+
+        template<typename T>
+        void Read(T& outData) {
+            Read(&outData, sizeof(T));
+        }
+
+        template<typename T>
+        void Read(std::vector<T>& outVector) {
+            uint32_t count;
+            Read(count);
+            outVector.resize(count);
+            for (T& element : outVector) {
+                Read(element);
+            } 
+        }
     private:
         char* mBuffer;
         uint32_t mHead;

@@ -62,6 +62,9 @@ TEST_CASE("MemoryStream") {
 
         free(data);
 
+        std::vector<uint8_t> vec (5, 0xff);
+        stream.Write(vec);
+
         bufferSize = stream.GetLength();
         bufferPtr = static_cast<char*>(malloc(bufferSize));
 
@@ -99,6 +102,16 @@ TEST_CASE("MemoryStream") {
         valid = true;
         for (int i = 0; i < 256; i++) {
             valid = valid && (buf3[i] == 2);
+        }
+        CHECK(valid);
+
+        std::vector<uint8_t> vec;
+        stream.Read(vec);
+
+        CHECK(vec.size() == 5);
+        valid = true;
+        for (auto element : vec) {
+            valid = valid && (element = 0xFF);
         }
         CHECK(valid);
 
