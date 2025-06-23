@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <exception>
 
-OutputMemoryStream::OutputMemoryStream() : mBuffer(nullptr), mHead(0), mCapacity(0) {
+OutputMemoryStream::OutputMemoryStream() : mBuffer(nullptr), mHead(0), mCapacity(0), mLinkingContext() {
     ReallocBuffer(32);
 }
 

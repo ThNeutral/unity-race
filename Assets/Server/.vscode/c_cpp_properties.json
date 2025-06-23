@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/utilities/**",
                 "${workspaceFolder}/wrappers/**",
+                "${workspaceFolder}/game/**",
                 "${workspaceFolder}/deps/**",
                 "/Library/Developer/CommandLineTools/usr/lib/clang/*/include",
                 "/Library/Developer/CommandLineTools/usr/include"

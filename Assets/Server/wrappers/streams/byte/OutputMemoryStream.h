@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h> 
 #include <vector>
+#include <streams/link/LinkingContext.h>
 
 class OutputMemoryStream {
     public:
@@ -16,6 +17,11 @@ class OutputMemoryStream {
         void Write(const void* inData, size_t inByteCount);
         void Write(uint32_t inData);
         void Write(int32_t inData);
+
+        void Write(const GameObject* inGameObject) {
+            uint32_t id = mLinkingContext->GetNetworkID(inGameObject);
+            Write(id);
+        }
 
         template<typename T>
         void Write(const T& inData) {
@@ -36,6 +42,8 @@ class OutputMemoryStream {
         char* mBuffer;
         uint32_t mHead;
         uint32_t mCapacity;
+
+        LinkingContext* mLinkingContext;
 };
 
 #endif

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string>
 
-InputMemoryStream::InputMemoryStream(char* inBuffer, uint32_t inByteCount) : mBuffer(inBuffer), mCapacity(inByteCount), mHead(0) {}
+InputMemoryStream::InputMemoryStream(char* inBuffer, uint32_t inByteCount) : mBuffer(inBuffer), mCapacity(inByteCount), mHead(0), mLinkingContext() {}
 
 InputMemoryStream::~InputMemoryStream() {
     free(mBuffer);
