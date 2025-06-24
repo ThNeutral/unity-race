@@ -5,10 +5,7 @@
 		},
 		{
 			"path": "./Assets"
-		},
-		{
-			"path": "./Assets/Server"
-		},
+		}
 	],
 	"settings": {
 		"files.associations": {
@@ -59,7 +56,9 @@
 			"string_view": "cpp",
 			"unordered_map": "cpp",
 			"vector": "cpp",
-			"algorithm": "cpp"
+			"algorithm": "cpp",
+			"bit": "cpp",
+			"__config": "cpp"
 		}
 	}
 }
