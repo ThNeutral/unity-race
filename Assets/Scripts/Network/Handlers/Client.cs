@@ -1,10 +1,12 @@
 using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Network.Internal.Message;
 using Network.Internal.Sock;
 using UnityEngine;
+using Utilities;
 
 namespace Network.Handlers
 {
@@ -17,33 +19,31 @@ namespace Network.Handlers
             socket = new(port);
         }
 
-        public async Task Connect(EndPoint endPoint)
+        public void Connect(EndPoint endPoint)
         {
-            var helloMessage = MessageFactory.FromObject(new { hello = true });
+            var helloMessage = MessageFactory.ClientHello();
 
-            var retries = 0;
-            while (retries < 3)
+            var maxRetries = 3;
+            IMessage respMessage = null;
+            EndPoint respEndpoint = null;
+            bool action()
             {
-                var result = socket.Send(helloMessage, endPoint);
-                if (!result.IsSuccess()) throw new Exception($"connection failed with code {result.error}");
+                var res = socket.Send(helloMessage, endPoint); 
 
-                var token = new CancellationTokenSource(TimeSpan.FromSeconds(2)).Token;
+                res = socket.Receive(out respMessage, out respEndpoint);
+                if (res.IsError()) return false;
 
-                IMessage respMessage = null;
-                EndPoint respEndpoint = null;
-                var listenTask = Task.Run(() => socket.Receive(out respMessage, out respEndpoint));
-                var timeoutTask = Task.Delay(Timeout.Infinite, token);
-                var completedTask = await Task.WhenAny(listenTask, timeoutTask);
-                if (completedTask == listenTask)
+                var @type = respMessage.Read<MessageType>("t");
+                if (@type != MessageType.ServerHello)
                 {
-                    Debug.Log($"Successfully connected to {respEndpoint}");
-                    break;
+                    Debug.Log("Unexpected message type");
                 }
-                else
-                {
-                    retries += 1;
-                    Debug.Log($"Connection attempt {retries} had failed");    
-                }
+
+                return true;
+            }
+            if (!new Runner(action).WithRetry(maxRetries).WithTimeout(2000).Run())
+            {
+                Debug.Log($"Failed to connect to {endPoint} after {maxRetries}");
             }
         }
 

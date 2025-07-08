@@ -11,6 +11,8 @@ namespace Network
         private bool isServer;
 
         private object handler;
+        public bool IsRunning => handler != null;
+
         private Task listener;
 
         [SerializeField]
@@ -18,7 +20,7 @@ namespace Network
 
         public void StartServer()
         {
-            if (handler != null) throw new System.Exception("already running handler");
+            if (IsRunning) throw new System.Exception("already running handler");
 
             var server = new Server(port);
             handler = server;
@@ -32,7 +34,7 @@ namespace Network
 
         public void StartClient()
         {
-            if (handler != null) throw new System.Exception("already running handler");
+            if (IsRunning) throw new System.Exception("already running handler");
             var endPoint = new IPEndPoint(IPAddress.Parse(serverIP), serverPort);
 
             var client = new Client(0);

@@ -7,6 +7,16 @@ namespace Network.Internal.Message
     {
         public static readonly MessageFormat selectedMessageFormat = MessageFormat.JSON;
 
+        public static IMessage ClientHello()
+        {
+            return FromObject(new {t = MessageType.ClientHello});
+        }
+        
+        public static IMessage ServerHello()
+        {
+            return FromObject(new { t = MessageType.ServerHello });
+        }
+
         public static IMessage FromObject(object payload)
         {
             switch (selectedMessageFormat)

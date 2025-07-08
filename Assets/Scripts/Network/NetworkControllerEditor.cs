@@ -21,7 +21,11 @@ namespace Network
                 SerializedProperty portProp = serializedObject.FindProperty("port");
                 EditorGUILayout.PropertyField(portProp);
 
-                if (GUILayout.Button("Start Server"))
+                if (controller.IsRunning)
+                {
+                    EditorGUILayout.HelpBox("Server is already running", MessageType.Info);     
+                }
+                else if (GUILayout.Button("Start Server"))
                 {
                     controller.StartServer();
                 }
@@ -35,7 +39,11 @@ namespace Network
                 EditorGUILayout.PropertyField(serverIPProp);
                 EditorGUILayout.PropertyField(serverPortProp);
 
-                if (GUILayout.Button("Start Client"))
+                if (controller.IsRunning)
+                {
+                    EditorGUILayout.HelpBox("Client is already running", MessageType.Info);     
+                }
+                else if (GUILayout.Button("Start Client"))
                 {
                     controller.StartClient();
                 }
