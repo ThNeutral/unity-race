@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,6 +37,7 @@ namespace Utilities
                 var task = Task.Run(action);
                 if (!task.Wait(timeoutMilliseconds) || !task.Result)
                 {
+                    Debug.Log("timed out");
                     attempts += 1;
                     continue;
                 }

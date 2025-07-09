@@ -47,7 +47,7 @@ namespace Network.Handlers
             }
             if (!new Runner(action).WithRetry(maxRetries).WithTimeout(2000).Run())
             {
-                Debug.Log($"Failed to connect to {endPoint} after {maxRetries}");
+                Debug.Log($"Failed to connect to {endPoint} after {maxRetries} retries");
                 return;
             }
 

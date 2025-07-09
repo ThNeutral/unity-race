@@ -48,6 +48,7 @@ namespace Network.Handlers.Shared
             while (true)
             {
                 var result = socket.Receive(out var message, out var endPoint);
+                Debug.Log($"Received message from {endPoint}");
                 if (result.IsDisconnect())
                 {
                     if (eventHandlers.TryGetValue(EventType.Disconnect, out var action))

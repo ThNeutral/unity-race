@@ -55,12 +55,14 @@ namespace Network.Handlers
         {
             if (connections.Count >= maximumConnectionSize)
             {
+                Debug.Log($"Rejected {endPoint}: too many connectins");
                 // Reject connection 
                 return;
             }
 
             var respMessage = MessageFactory.ServerHello();
             var ipStr = endPoint.ToString();
+            Debug.Log($"Accepted {ipStr}: too many connectins");
             if (connections.ContainsKey(ipStr))
             {
                 // If key already is in connections, 

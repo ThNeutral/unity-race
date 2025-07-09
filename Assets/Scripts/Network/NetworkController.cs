@@ -24,6 +24,7 @@ namespace Network
 
             var server = new Server(port);
             handler = server;
+            Debug.Log($"Listening on {port}");
             listener = Task.Run(server.Listen);
         }
         
@@ -39,6 +40,7 @@ namespace Network
 
             var client = new Client(0);
             handler = client;
+            Debug.Log($"Connecting to {endPoint}");
             listener = Task.Run(() => client.Connect(endPoint));
         }
     }
