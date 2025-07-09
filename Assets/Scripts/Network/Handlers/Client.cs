@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Network.Handlers.Shared;
 using Network.Internal.Message;
 using Network.Internal.Sock;
 using UnityEngine;
@@ -13,10 +14,12 @@ namespace Network.Handlers
     public class Client : IDisposable
     {
         private readonly UDPSocket socket;
+        private readonly EventLoop eventLoop;
 
         public Client(int port)
         {
             socket = new(port);
+            eventLoop = new(socket);
         }
 
         public void Connect(EndPoint endPoint)
@@ -28,15 +31,16 @@ namespace Network.Handlers
             EndPoint respEndpoint = null;
             bool action()
             {
-                var res = socket.Send(helloMessage, endPoint); 
+                var res = socket.Send(helloMessage, endPoint);
 
                 res = socket.Receive(out respMessage, out respEndpoint);
                 if (res.IsError()) return false;
 
-                var @type = respMessage.Read<MessageType>("t");
+                var @type = respMessage.Type();
                 if (@type != MessageType.ServerHello)
                 {
                     Debug.Log("Unexpected message type");
+                    return false;
                 }
 
                 return true;
@@ -44,7 +48,16 @@ namespace Network.Handlers
             if (!new Runner(action).WithRetry(maxRetries).WithTimeout(2000).Run())
             {
                 Debug.Log($"Failed to connect to {endPoint} after {maxRetries}");
+                return;
             }
+
+            Debug.Log($"Successfully connected to {endPoint}");
+            Listen();
+        }
+
+        private void Listen()
+        {
+            eventLoop.Run();
         }
 
         private bool disposed = false;

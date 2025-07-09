@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using Network.Handlers.Shared;
 using Network.Internal.Message;
 using Network.Internal.Sock;
 using UnityEngine;
@@ -12,52 +13,42 @@ namespace Network.Handlers
         private readonly UDPSocket socket;
         public bool Blocking => socket.Blocking;
 
+        private readonly EventLoop eventLoop;
+
         private readonly Dictionary<string, bool> connections;
         private readonly int maximumConnectionSize;
 
         public Server(int port, int maximumConnectionSize = 3)
         {
             socket = new(port);
+            eventLoop = new(socket);
             connections = new(maximumConnectionSize);
             this.maximumConnectionSize = maximumConnectionSize;
+
+            SetupListeners();
+        }
+
+        private void SetupListeners()
+        {
+            eventLoop.On(EventLoop.EventType.Disconnect, HandleDisconnect);
+            eventLoop.On(EventLoop.EventType.Error, HandleError);
+
+            eventLoop.On(MessageType.ClientHello, HandleClientHello);
+        }
+
+        private void HandleDisconnect(SocketResult result, EndPoint endPoint)
+        {
+            Debug.Log($"{endPoint} disconnected");    
+        }
+        
+        private void HandleError(SocketResult result, EndPoint endPoint)
+        {
+            Debug.Log($"{endPoint} error: {result.error}");
         }
 
         public void Listen()
         {
-            if (!Blocking)
-                throw new Exception("non blocking listener is not supported");
-
-            while (true)
-            {
-                var result = socket.Receive(out var message, out var endPoint);
-                if (result.IsDisconnect())
-                {
-                    connections.Remove(endPoint.ToString());
-                    continue;
-                }
-
-                if (result.IsError())
-                {
-                    Debug.Log($"Receive from {endPoint} failed with code {result.error}");
-                    continue;
-                }
-
-                var messageType = message.Type();
-                switch (messageType)
-                {
-                    case MessageType.ClientHello:
-                        HandleClientHello(message, endPoint);
-                        break;
-
-                    case MessageType.ServerHello:
-                        Debug.Log($"Unexpected message type received on server: {messageType}");
-                        break;
-
-                    default:
-                        Debug.Log($"Invalid message type: {messageType}");
-                        break;
-                }
-            }
+            eventLoop.Run();
         }
 
         private void HandleClientHello(IMessage message, EndPoint endPoint)
@@ -68,8 +59,7 @@ namespace Network.Handlers
                 return;
             }
 
-            var resp = new { acknowledged = true };
-            var respMessage = MessageFactory.FromObject(resp);
+            var respMessage = MessageFactory.ServerHello();
             var ipStr = endPoint.ToString();
             if (connections.ContainsKey(ipStr))
             {

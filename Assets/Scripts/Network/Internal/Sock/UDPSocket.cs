@@ -5,7 +5,7 @@ using Network.Internal.Message;
 
 namespace Network.Internal.Sock
 {
-    public class UDPSocket : IDisposable, ISender, IReceiver
+    public class UDPSocket : IDisposable
     {
         public static int MaximumDatagramSize = 1200;
 
