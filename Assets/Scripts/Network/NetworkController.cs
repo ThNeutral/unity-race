@@ -1,6 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
-using Network.Handlers;
+using Network.Runners;
 using UnityEngine;
 
 namespace Network
@@ -13,35 +13,29 @@ namespace Network
         private object handler;
         public bool IsRunning => handler != null;
 
-        private Task listener;
-
         [SerializeField]
-        private int port;
+        private int port = 9432;
 
         public void StartServer()
         {
             if (IsRunning) throw new System.Exception("already running handler");
-
             var server = new Server(port);
+            Task.Run(() => server.Run());
             handler = server;
-            Debug.Log($"Listening on {port}");
-            listener = Task.Run(server.Listen);
         }
         
         [SerializeField]
-        private string serverIP;
+        private string serverIP = "127.0.0.1";
         [SerializeField]
-        private int serverPort;
+        private int serverPort = 9432;
 
         public void StartClient()
         {
             if (IsRunning) throw new System.Exception("already running handler");
             var endPoint = new IPEndPoint(IPAddress.Parse(serverIP), serverPort);
-
-            var client = new Client(0);
+            var client = new Client();
+            Task.Run(() => client.Connect(endPoint));
             handler = client;
-            Debug.Log($"Connecting to {endPoint}");
-            listener = Task.Run(() => client.Connect(endPoint));
         }
     }
 }

@@ -165,8 +165,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isServer: 1
   port: 9432
-  serverIP: 
-  serverPort: 0
+  serverIP: 127.0.0.1
+  serverPort: 9432
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
