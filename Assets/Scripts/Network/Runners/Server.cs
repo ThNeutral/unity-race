@@ -6,7 +6,11 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Network.Internals;
-using Network.Internals.Message;
+using Message;
+using State;
+using State.Enums;
+using Store.Enums;
+using State.DTO;
 
 namespace Network.Runners
 {
@@ -20,6 +24,8 @@ namespace Network.Runners
 
         private readonly int maximumNumberOfClients = 3;
 
+        private StateController stateController;
+
         public Server(int port, int maximumNumberOfClients = 3)
         {
             this.maximumNumberOfClients = maximumNumberOfClients;
@@ -28,52 +34,35 @@ namespace Network.Runners
             connections = new(maximumNumberOfClients);
             udpClient = new(0);
             sockets = new(2 + maximumNumberOfClients);
+
+            stateController = StateController.Instance;
         }
 
         private readonly List<Socket> sockets;
-        private List<Socket> GetAvailableSockets()
+        private void UpdateSockets()
         {
             sockets.Clear();
             sockets.Add(tcpListener.Socket);
             foreach (var client in tcpClients) sockets.Add(client.Socket);
             sockets.Add(udpClient.Socket);
-            return sockets;
         }
 
         public void Run()
         {
-            Debug.Log($"Listening on: TCP {tcpListener.LocalEndPoint}, UDP {udpClient.LocalEndPoint}");
             try
             {
+                var hostPlayerCar = SyncData.CreateCarDefault();
+                stateController.Schedule(hostPlayerCar);
+                Debug.Log($"Listening on: TCP {tcpListener.LocalEndPoint}, UDP {udpClient.LocalEndPoint}");
                 while (true)
                 {
-                    var socks = GetAvailableSockets();
-                    Socket.Select(socks, null, null, -1);
-                    foreach (var sock in socks)
+                    UpdateSockets();
+                    Socket.Select(sockets, null, null, -1);
+                    foreach (var sock in sockets)
                     {
                         if (sock == tcpListener.Socket)
                         {
-                            var client = tcpListener.Accept();
-
-                            if (tcpClients.Count >= maximumNumberOfClients)
-                            {
-                                var serverReject = MessageFactory.ServerReject();
-                                client.Send(serverReject.Serialize());
-                                Debug.Log($"Rejected {client.RemoteEndPoint}");
-                                client.Close();
-                            }
-                            else
-                            {
-                                var port = (ushort)udpClient.LocalEndPoint.Port;
-                                var serverAccept = MessageFactory.ServerAccept(port);
-                                var result = client.Send(serverAccept.Serialize());
-                                if (result.Error == SocketError.Success)
-                                {
-                                    tcpClients.Add(client);
-                                    Debug.Log($"Accepted {client.RemoteEndPoint}");
-                                }
-                            }
-
+                            HandleInitialConnect();
                             continue;
                         }
 
@@ -92,6 +81,38 @@ namespace Network.Runners
             catch (Exception ex)
             {
                 Debug.Log($"Server.Run failed: {ex.Message}");
+            }
+        }
+
+        private void HandleInitialConnect()
+        {
+            var client = tcpListener.Accept();
+
+            if (tcpClients.Count >= maximumNumberOfClients)
+            {
+                var serverReject = MessageFactory.ServerReject();
+                client.Send(serverReject.Serialize());
+                Debug.Log($"Rejected {client.RemoteEndPoint}");
+                client.Close();
+            }
+            else
+            {
+                var port = (ushort)udpClient.LocalEndPoint.Port;
+                var serverAccept = MessageFactory.ServerAccept(port);
+                var result = client.Send(serverAccept.Serialize());
+                if (result.Error == SocketError.Success)
+                {
+                    tcpClients.Add(client);
+                    var newClientCar = SyncData.CreateCarDefault();
+                    stateController.Schedule(newClientCar);
+                    Debug.Log($"Accepted {client.RemoteEndPoint}");
+                }
+
+                var syncDatas = stateController.GetInitialSyncData();
+                var serverInitialSyncState = MessageFactory.ServerInitialSyncState(syncDatas);
+                result = client.Send(serverInitialSyncState.Serialize());
+                if (result.Error != SocketError.Success)
+                    throw new Exception($"failed to send bytes: {result.Error}");
             }
         }
     }

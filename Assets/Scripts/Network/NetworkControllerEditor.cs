@@ -10,20 +10,20 @@ namespace Network
         {
             serializedObject.Update();
 
-            NetworkController controller = (NetworkController)target;
+            var controller = (NetworkController)target;
 
-            SerializedProperty isServerProp = serializedObject.FindProperty("isServer");
+            var isServerProp = serializedObject.FindProperty("isServer");
             EditorGUILayout.PropertyField(isServerProp);
 
             if (isServerProp.boolValue)
             {
                 // Server section
-                SerializedProperty portProp = serializedObject.FindProperty("port");
+                var portProp = serializedObject.FindProperty("port");
                 EditorGUILayout.PropertyField(portProp);
 
                 if (controller.IsRunning)
                 {
-                    EditorGUILayout.HelpBox("Server is already running", MessageType.Info);     
+                    EditorGUILayout.HelpBox("Server is already running", MessageType.Info);
                 }
                 else if (GUILayout.Button("Start Server"))
                 {

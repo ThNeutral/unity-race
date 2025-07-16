@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 using System.Text;
+using State.DTO;
 using UnityEngine;
 
-namespace Network.Internals.Message
+using JSONObject = System.Collections.Generic.Dictionary<string, object>;
+
+namespace Message
 {
     public static class MessageFactory
     {
@@ -10,7 +13,7 @@ namespace Network.Internals.Message
 
         public static JSON ClientHello()
         {
-            var obj = new Dictionary<string, object>()
+            var obj = new JSONObject()
             {
                 {TypeKey, MessageType.ClientHello }
             };
@@ -21,7 +24,7 @@ namespace Network.Internals.Message
 
         public static JSON ServerAccept(ushort udpPort)
         {
-            var obj = new Dictionary<string, object>()
+            var obj = new JSONObject()
             {
                 { TypeKey, MessageType.ServerAccept },
                 { PortKey, udpPort },
@@ -31,9 +34,21 @@ namespace Network.Internals.Message
 
         public static JSON ServerReject()
         {
-            var obj = new Dictionary<string, object>()
+            var obj = new JSONObject()
             {
                 { TypeKey, MessageType.ServerReject },
+            };
+            return new JSON(obj);
+        }
+
+        public static readonly string DatasKey = "dts";
+
+        public static JSON ServerInitialSyncState(List<SyncData> syncDatas)
+        {
+            var obj = new JSONObject()
+            {
+                { TypeKey, MessageType.ServerInitialSyncState },
+                { DatasKey, syncDatas }
             };
             return new JSON(obj);
         }

@@ -1,9 +1,10 @@
-namespace Network.Internals.Message
+namespace Message
 {
     public enum MessageType : byte
     {
         ClientHello,
         ServerAccept,
-        ServerReject
+        ServerReject,
+        ServerInitialSyncState
     }
 }

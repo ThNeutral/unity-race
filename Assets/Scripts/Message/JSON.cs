@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 using JSONObject = System.Collections.Generic.Dictionary<string, object>;
 
-namespace Network.Internals.Message
+namespace Message
 {
     public class JSON
     {
